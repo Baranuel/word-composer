@@ -17,11 +17,11 @@
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
+  color: '#333';
   background: linear-gradient(
       to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
+      white,
+      'cyan'
     )
     rgb(var(--background-start-rgb));
 }
