@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useLayoutEffect, useMemo } from "react";
+import { useEffect, useState, useCallback, useLayoutEffect, useMemo, use } from "react";
 import { Sentence } from "./Game";
 
 export type Word = {
@@ -23,10 +23,11 @@ const { prompt } = sentence;
 
   const [toComposeArray, setToComposeArray] = useState<Word[]>(options)
   const [composedSentence, setComposedSentence] = useState<Word[]>([]);
-  const isEveryWordPicked = toComposeArray.every((word) => word.isPicked);
+  const [score, setScore] = useState(0);
   
   useEffect(() => {
     setToComposeArray(options)
+    
   },[options])
 
   const pickWord = (pickedWord: Word) => {
@@ -36,12 +37,14 @@ const { prompt } = sentence;
       return newSentence;
     });
 
+    
     setToComposeArray((prev) => {
       const newArray = prev.map((word) =>
-        word.id === pickedWord.id ? { ...word, isPicked: true } : word
+      word.id === pickedWord.id ? { ...word, isPicked: true } : word
       );
       return newArray;
     })
+
 };
 
 
@@ -50,6 +53,7 @@ const { prompt } = sentence;
       const newSentence = prev.filter((word) => word.id !== wordToRemove.id);
       return newSentence;
     });
+
 
     setToComposeArray((prev) => {
       const newArray = prev.map((word) =>
@@ -65,40 +69,53 @@ const { prompt } = sentence;
   } , [next])
 
   const checkAnswer = useCallback((originalSentence:string, composedSentence:Record<any,string>) => {
-    const prompt = composedSentence.prompt
-    const answer = composedSentence.answer
+    const {prompt, answer} = composedSentence
     const composedSentenceArray = prompt.split(' ').concat(answer.split(' ')).join(' ')
     const isCorrect =  originalSentence === composedSentenceArray
-
+    
     if(isCorrect) {
-      setToComposeArray(prev => prev.map(word => word.state === 'neutral' ? {...word, state:'correct'} : word))
+      setComposedSentence(prev => prev.map(word => word.state === 'neutral' ? {...word, state:'correct'} : word))
       setTimeout(() => {
         handleNext()
-      }, 400)
+      }, 800)
+      
     } else {
-        setToComposeArray(prev => prev.map(word => word.state === 'neutral' ? {...word, state:'wrong'} : word))}
-        
+      setComposedSentence(prev => prev.map(word => word.state === 'neutral' ? {...word, state:'wrong'} : word))}
+
   }, [handleNext]);
 
 
-  useLayoutEffect(() => {
-    isEveryWordPicked && checkAnswer(sentence.sentence, {prompt: prompt, answer: composedSentence.map(word => word.text).join(' ')})
-  }, [checkAnswer, composedSentence, isEveryWordPicked, prompt, sentence])
+
+  useEffect(() => {
+    const everyWordIsPicked = toComposeArray.every(word => word.isPicked)
+    if (everyWordIsPicked) {
+    checkAnswer(sentence.sentence, {prompt: prompt, answer: composedSentence.map(word => word.text).join(' ')})  
+    }
+  },[checkAnswer, composedSentence, prompt, sentence.sentence, toComposeArray])
+
 
   
 
 
 
   return (
-    <section className="flex flex-col gap-4 items-center justify-center min-h-[700px] p-24">
-      <h1 className="text-4xl text-violet-700">{prompt}</h1>
-      <div className="block self-start mt-4 min-h-24">
+    <section className="flex flex-col gap-1 items-center justify-center min-h-[700px] p-24">
+      <div>
+        <h1 className="text-3xl">Score: {score}</h1>
+      </div>
+      <p className="self-start text-sm text-stone-600">Finish the Saying</p>
+      <h1 className="self-start text-2xl ">{prompt}</h1>
+      <div className="block self-start min-w-full mt-4 min-h-24 h-12 ">
         {composedSentence.map((word, index) => {
           return (
             <span
               onClick={() => removeWord(word)}
               key={index}
-              className="text-2xl text-stone-900 mr-2 hover:cursor-pointer"
+              className={`text-2xl  mr-2 hover:cursor-pointer text-1xl text-gray-700 p-2 min-w-[50px]  border rounded-md
+              ${word.state === 'correct' && ' opacity-100  text-green-500 border-green-500 '}
+              ${word.state === 'wrong' && ' opacity-100  text-red-500 border-red-500 '}
+              ${word.state === 'neutral' && '  text-stone-900 border-stone-900 '}
+              `}
             >
               {word.text}
             </span>
@@ -106,16 +123,15 @@ const { prompt } = sentence;
         })}
       </div>
 
-      <div className="mt-24 flex gap-2">
+      <div className="mt-24 flex gap-2 ">
         {toComposeArray.map((word, index) => {
           return (
             <span
               onClick={() => pickWord(word)}
               key={index}
-              className={`hover:cursor-pointer text-1xl text-gray-700 p-2 border border-stone-900 rounded-md ${
+              className={`hover:cursor-pointer text-1xl text-gray-700 p-2 min-w-[50px] flex items-center justify-center border border-stone-900 rounded-md ${
                 word.isPicked && "opacity-20 pointer-events-none"}
-                ${word.state === 'correct' && 'bg-green-200 opacity-100 border-green-500 text-green-500 '}
-                ${word.state === 'wrong' && 'bg-red-200 opacity-100 border-red-500 text-red-500'}`}
+               `}
             >
               {word.text}
             </span>
