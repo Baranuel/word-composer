@@ -30,31 +30,19 @@ const sentences = [
 
 
 export const Game = () => {
-   
       const [sentenceIndex, setSentenceIndex] = useState(0);
       const randomSentence= sentences[sentenceIndex]
 
       const nextSentence = () => {
-        setSentenceIndex(prev => prev + 1);
+        setSentenceIndex(prev => {
+          if(prev === sentences.length - 1) {
+            return 0
+          }
+          return prev + 1
+        });
       }
 
-    const middleOfTheSentence = Math.floor(randomSentence.split(" ").length / 2);
-
-    const toShow = randomSentence
-      .split(" ")
-      .slice(0, middleOfTheSentence)
-      .join(" ");
-
-  
-    const optionsArray = randomSentence
-      .split(" ")
-      .slice(middleOfTheSentence)
-      .sort();
-
-
-      
       const sentence = new Sentence(randomSentence);
-
       const op:Word[] = sentence.options.map((word) => {
         return {
             text: word,
