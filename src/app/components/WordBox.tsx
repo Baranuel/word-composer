@@ -2,9 +2,13 @@ import { Ref, RefObject, useEffect, useLayoutEffect, useRef } from "react";
 import { Word } from "./Sentences";
 
 
+interface DOMRectExtended extends DOMRect {
+    id: number;
+    sizes: DOMRect
+}
 interface Props {
     word: Word;
-    initialPosition:RefObject<HTMLElement>;
+    initialPosition:DOMRectExtended;
     onClick: (word: Word) => void;
 
 }
@@ -20,15 +24,28 @@ interface RectBox {
 export const WordBox = ({ word, onClick, initialPosition }: Props) => {
     const ref = useRef<HTMLElement>(null);
 
-    // useLayoutEffect(() => {
-    //     if(!ref.current) return;
-    //     ref.current.animate([
-    //         {scale: 1.5, opacity: 0.5},
-    //     ], {
-    //         duration: 100,
-    //         fill: 'forwards'
-    //     }) 
-    // })
+    useLayoutEffect(() => {
+        if(!ref.current) return;
+        if(word.id !== initialPosition.id) return;
+        const rect = ref.current.getBoundingClientRect();
+        const dx = initialPosition.sizes.x - rect.x;
+        const dy = initialPosition.sizes.y - rect.y;
+
+        ref.current.animate([
+            {transform: `translate(${dx}px, ${dy}px)`},
+            {transform: `translate(0px, 0px)`}
+        ] ,{
+            duration: 200,
+            easing: 'ease-in-out',
+        
+        })
+
+        
+
+
+    })
+
+
     return <span
     ref={ref}
     onClick={() => onClick(word)}

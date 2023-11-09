@@ -26,9 +26,9 @@ const { prompt } = sentence;
   const [toComposeArray, setToComposeArray] = useState<Word[]>(options)
   const [composedSentence, setComposedSentence] = useState<Word[]>([]);
   const [score, setScore] = useState(0);
-
   const spanRefs = useRef<HTMLElement[]>(Array(toComposeArray.length).fill(createRef()));
   const [clickedPosition, setClickedPosition] = useState<any>(undefined)
+
   const clickedWord = useRef<HTMLElement>(null)
   const initialPosition = clickedWord?.current?.getBoundingClientRect()
   
@@ -100,7 +100,6 @@ const { prompt } = sentence;
   };
   
 
-
   const handleClick = useCallback((ref:any, word:Word) => {
     setClickedPosition(ref)
     pickWord(word)
@@ -132,13 +131,22 @@ const { prompt } = sentence;
         })}
       </div>
 
+
       <div className="mt-24 flex  flex-wrap  sm:items-center sm:justify-center gap-2 ">
         {toComposeArray.map((word, index) => {
-                    
+
           return (
             <span
-
-              onClick={() => pickWord( word)}
+              ref={el => spanRefs.current[index] = el ?? spanRefs.current[index]}
+              onClick={(e) => {
+                pickWord( word)
+                const element = e.target as HTMLElement
+                const position = {
+                  id: word.id,
+                  sizes: element.getBoundingClientRect()
+                }
+                setClickedPosition(position)
+              }}
               key={index}
               className={`hover:cursor-pointer text-1xl text-gray-700 p-2 min-w-[50px] sm:min-w-[30px] flex items-center justify-center border border-stone-900 rounded-md ${
                 word.isPicked && "opacity-20 pointer-events-none"}
